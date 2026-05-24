@@ -45,5 +45,23 @@
 ### Installation & Execution
 1. **Clone the repository:**
    ```bash
-   git clone <your-repository-url>
+   git clone https://github.com/Ujjwal5705/Finance-Manager.git
    cd finance-manager
+   ```
+2. **Run the application:**
+   ```Bash
+   mvn spring-boot:run
+   ```
+3. **Run the test suite:**
+   ```Bash
+   mvn test
+   ```
+---
+
+### Project Structure
+The application follows the professional MVC + Service + Repository pattern:
+- controller/: REST API endpoints.
+- dto/: Data Transfer Objects for secure request handling.
+- entity/: Database models.
+- repository/: Data access layer.
+- exception/: Global error handling.

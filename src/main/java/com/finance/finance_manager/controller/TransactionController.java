@@ -48,7 +48,7 @@ public class TransactionController {
                 .user(user)
                 .build();
 
-        transactionRepository.save(transaction);
+        transaction = transactionRepository.save(transaction);
 
         return ResponseEntity.status(201).body(Map.of(
                 "id", transaction.getId(),

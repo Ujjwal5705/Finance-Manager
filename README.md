@@ -25,23 +25,27 @@ This project was developed as a complete backend engineering assignment with a f
 
 ---
 
-# Live Deployment
+## Live Deployment
 
-## Render Deployment
-https://finance-manager-9q8z.onrender.com
-
----
-
-# GitHub Repository
-
-## Repository URL
-https://github.com/Ujjwal5705/Finance-Manager
+### Render Deployment
+   ```text
+   https://finance-manager-9q8z.onrender.com
+   ```
 
 ---
 
-# Features
+## GitHub Repository
 
-## Authentication & Session Management
+### Repository URL
+   ```text
+   https://github.com/Ujjwal5705/Finance-Manager
+   ```
+
+---
+
+## Features
+
+### Authentication & Session Management
 - User registration
 - Session-based login/logout
 - Secure password hashing using BCrypt
@@ -49,7 +53,7 @@ https://github.com/Ujjwal5705/Finance-Manager
 
 ---
 
-## Category Management
+### Category Management
 - Create custom categories
 - Delete categories
 - Default expense/income categories
@@ -58,7 +62,7 @@ https://github.com/Ujjwal5705/Finance-Manager
 
 ---
 
-## Transaction Management
+### Transaction Management
 - Create transactions
 - Update transactions
 - Delete transactions
@@ -70,7 +74,7 @@ https://github.com/Ujjwal5705/Finance-Manager
 
 ---
 
-## Savings Goals
+### Savings Goals
 - Create financial goals
 - Update target amount
 - Track savings progress
@@ -80,7 +84,7 @@ https://github.com/Ujjwal5705/Finance-Manager
 
 ---
 
-## Financial Reports
+### Financial Reports
 - Monthly financial reports
 - Yearly financial reports
 - Expense analytics
@@ -89,7 +93,7 @@ https://github.com/Ujjwal5705/Finance-Manager
 
 ---
 
-## Validation & Error Handling
+### Validation & Error Handling
 - Request validation using Jakarta Validation
 - Global exception handling
 - Proper HTTP status codes
@@ -98,7 +102,7 @@ https://github.com/Ujjwal5705/Finance-Manager
 
 ---
 
-## Testing
+### Testing
 - JUnit 5
 - Mockito
 - JaCoCo coverage reporting
@@ -108,7 +112,7 @@ https://github.com/Ujjwal5705/Finance-Manager
 
 ---
 
-# Tech Stack
+### Tech Stack
 
 | Technology | Usage |
 |---|---|
@@ -127,7 +131,7 @@ https://github.com/Ujjwal5705/Finance-Manager
 
 ---
 
-# Project Structure
+### Project Structure
 
 ```text
 src/main/java/com/finance/finance_manager
@@ -263,3 +267,48 @@ Integration Test Suite
 - Tests Failed: 0
 
 #### Success Rate: 100%
+
+---
+
+## Screenshots
+
+#### API test results
+<img src="https://i.ibb.co/PzNGnrKq/Screenshot-2026-05-25-at-12-24-27-AM.png" alt="Screenshot 2026 05 25 at 12 24 27 AM" border="0">
+
+#### Render deployment dashboard
+<img src="https://i.ibb.co/SwQKhjXk/Screenshot-2026-05-25-at-12-25-02-AM.png" alt="Screenshot 2026 05 25 at 12 25 02 AM" border="0">
+
+#### JaCoCo coverage report
+<img src="https://i.ibb.co/W4Xpp5Xm/Screenshot-2026-05-25-at-12-25-32-AM.png" alt="Screenshot 2026 05 25 at 12 25 32 AM" border="0">
+
+#### Postman responses
+<img src="https://i.ibb.co/xqy0zJQ2/Screenshot-2026-05-25-at-12-26-04-AM.png" alt="Screenshot 2026 05 25 at 12 26 04 AM" border="0">
+
+---
+
+## Future Improvements
+- PostgreSQL integration
+- JWT authentication
+- Swagger/OpenAPI documentation
+- Redis caching
+- CI/CD pipeline
+- Role-based authorization
+- Frontend dashboard
+- Email notifications
+
+---
+
+## Author
+```text
+Ujjwal Sharma
+Backend Developer | Competitive Programmer | Open Source Contributor
+```
+
+- GitHub: https://github.com/Ujjwal5705
+- LeetCode: https://leetcode.com/u/Ujjwal5706/
+- Codeforces: https://codeforces.com/profile/sharmaujjwal5706
+
+## License
+```text
+This project is developed for educational and evaluation purposes.
+```

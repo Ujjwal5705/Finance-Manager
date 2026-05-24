@@ -15,6 +15,5 @@ public interface TransactionRepository
     List<Transaction> findByUserAndDateBetweenOrderByDateDesc(
             User user,
             LocalDate startDate,
-            LocalDate endDate
-    );
+            LocalDate endDate);
 }

@@ -10,7 +10,6 @@ import com.finance.finance_manager.repository.GoalRepository;
 import com.finance.finance_manager.repository.TransactionRepository;
 import com.finance.finance_manager.config.SessionUtil;
 
-
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -29,28 +28,24 @@ public class GoalController {
 
     private final GoalRepository goalRepository;
     private final TransactionRepository transactionRepository;
-    private final SessionUtil sessionUtil; // 1. Inject SessionUtil
+    private final SessionUtil sessionUtil;
 
     @PostMapping
     public ResponseEntity<?> createGoal(
             @Valid @RequestBody GoalRequest request,
-            HttpSession session
-    ) {
-        // 2. Use SessionUtil for authentication
+            HttpSession session) {
         User user = sessionUtil.getLoggedInUser(session);
 
-        LocalDate startDate =
-                request.getStartDate() == null
-                        ? LocalDate.now()
-                        : request.getStartDate();
+        LocalDate startDate = request.getStartDate() == null
+                ? LocalDate.now()
+                : request.getStartDate();
 
         if (startDate.isAfter(request.getTargetDate())) {
 
-        return ResponseEntity.badRequest()
-                .body(Map.of(
-                        "message",
-                        "Start date cannot be after target date"
-                ));
+            return ResponseEntity.badRequest()
+                    .body(Map.of(
+                            "message",
+                            "Start date cannot be after target date"));
         }
 
         Goal goal = Goal.builder()
@@ -60,8 +55,7 @@ public class GoalController {
                 .startDate(
                         request.getStartDate() == null
                                 ? java.time.LocalDate.now()
-                                : request.getStartDate()
-                )
+                                : request.getStartDate())
                 .user(user)
                 .build();
 
@@ -82,7 +76,7 @@ public class GoalController {
     public ResponseEntity<?> getGoal(@PathVariable Long id, HttpSession session) {
         User user = sessionUtil.getLoggedInUser(session);
         Goal goal = goalRepository.findById(id).orElseThrow();
-        
+
         if (!goal.getUser().getId().equals(user.getId())) {
             return ResponseEntity.status(403).body(Map.of("message", "Forbidden"));
         }
@@ -94,21 +88,20 @@ public class GoalController {
     public ResponseEntity<?> updateGoal(
             @PathVariable Long id,
             @RequestBody UpdateGoalRequest request,
-            HttpSession session
-    ) {
+            HttpSession session) {
         User user = sessionUtil.getLoggedInUser(session);
         Goal goal = goalRepository.findById(id).orElseThrow();
-        
+
         if (!goal.getUser().getId().equals(user.getId())) {
             return ResponseEntity.status(403).body(Map.of("message", "Forbidden"));
         }
 
         if (request.getTargetAmount() != null) {
-                goal.setTargetAmount(request.getTargetAmount());
+            goal.setTargetAmount(request.getTargetAmount());
         }
 
         if (request.getTargetDate() != null) {
-                goal.setTargetDate(request.getTargetDate());
+            goal.setTargetDate(request.getTargetDate());
         }
         goalRepository.save(goal);
 
@@ -119,7 +112,7 @@ public class GoalController {
     public ResponseEntity<?> deleteGoal(@PathVariable Long id, HttpSession session) {
         User user = sessionUtil.getLoggedInUser(session);
         Goal goal = goalRepository.findById(id).orElseThrow();
-        
+
         if (!goal.getUser().getId().equals(user.getId())) {
             return ResponseEntity.status(403).body(Map.of("message", "Forbidden"));
         }
@@ -135,7 +128,8 @@ public class GoalController {
         BigDecimal expense = BigDecimal.ZERO;
 
         for (Transaction transaction : transactions) {
-            if (transaction.getDate().isBefore(goal.getStartDate())) continue;
+            if (transaction.getDate().isBefore(goal.getStartDate()))
+                continue;
             if (transaction.getCategory().getType() == TransactionType.INCOME) {
                 income = income.add(transaction.getAmount());
             } else {
@@ -143,18 +137,15 @@ public class GoalController {
             }
         }
 
-        BigDecimal progress =
-                income.subtract(expense);
+        BigDecimal progress = income.subtract(expense);
         if (progress.compareTo(BigDecimal.ZERO) < 0) {
-        progress = BigDecimal.ZERO;
+            progress = BigDecimal.ZERO;
         }
         BigDecimal remaining = goal.getTargetAmount().subtract(progress);
-        double percentage =
-                progress.doubleValue() * 100
-                        / goal.getTargetAmount().doubleValue();
+        double percentage = progress.doubleValue() * 100
+                / goal.getTargetAmount().doubleValue();
 
-        percentage =
-                Math.round(percentage * 100.0) / 100.0;
+        percentage = Math.round(percentage * 100.0) / 100.0;
 
         return Map.of(
                 "id", goal.getId(),
@@ -164,7 +155,6 @@ public class GoalController {
                 "startDate", goal.getStartDate(),
                 "currentProgress", progress,
                 "progressPercentage", percentage,
-                "remainingAmount", remaining
-        );
+                "remainingAmount", remaining);
     }
 }

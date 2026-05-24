@@ -14,8 +14,7 @@ public class SessionUtil {
 
     public User getLoggedInUser(HttpSession session) {
 
-        Object username =
-                session.getAttribute("username");
+        Object username = session.getAttribute("username");
 
         if (username == null) {
             throw new RuntimeException("Unauthorized");

@@ -4,7 +4,7 @@ import com.finance.finance_manager.entity.Transaction;
 import com.finance.finance_manager.entity.TransactionType;
 import com.finance.finance_manager.entity.User;
 import com.finance.finance_manager.repository.TransactionRepository;
-import com.finance.finance_manager.config.SessionUtil; // Import helper
+import com.finance.finance_manager.config.SessionUtil;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -22,22 +22,19 @@ import java.util.Map;
 public class ReportController {
 
     private final TransactionRepository transactionRepository;
-    private final SessionUtil sessionUtil; // 1. Inject SessionUtil
+    private final SessionUtil sessionUtil;
 
     @GetMapping("/monthly/{year}/{month}")
     public ResponseEntity<?> monthlyReport(
             @PathVariable int year,
             @PathVariable int month,
-            HttpSession session
-    ) {
+            HttpSession session) {
         if (month < 1 || month > 12) {
-                return ResponseEntity.badRequest()
-                        .body(Map.of(
-                                "message",
-                                "Invalid month"
-                        ));
+            return ResponseEntity.badRequest()
+                    .body(Map.of(
+                            "message",
+                            "Invalid month"));
         }
-        // 2. Use helper for cleaner authentication
         User user = sessionUtil.getLoggedInUser(session);
 
         List<Transaction> transactions = transactionRepository.findByUserOrderByDateDesc(user);
@@ -66,15 +63,13 @@ public class ReportController {
                 "year", year,
                 "totalIncome", incomeMap,
                 "totalExpenses", expenseMap,
-                "netSavings", income.subtract(expense)
-        ));
+                "netSavings", income.subtract(expense)));
     }
 
     @GetMapping("/yearly/{year}")
     public ResponseEntity<?> yearlyReport(
             @PathVariable int year,
-            HttpSession session
-    ) {
+            HttpSession session) {
         User user = sessionUtil.getLoggedInUser(session);
 
         List<Transaction> transactions = transactionRepository.findByUserOrderByDateDesc(user);
@@ -101,7 +96,6 @@ public class ReportController {
                 "year", year,
                 "totalIncome", incomeMap,
                 "totalExpenses", expenseMap,
-                "netSavings", income.subtract(expense)
-        ));
+                "netSavings", income.subtract(expense)));
     }
 }

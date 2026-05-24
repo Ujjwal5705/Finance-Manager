@@ -24,16 +24,14 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<?> register(
-            @Valid @RequestBody RegisterRequest request
-    ) {
+            @Valid @RequestBody RegisterRequest request) {
 
         if (userRepository.existsByUsername(request.getUsername())) {
 
             return ResponseEntity.badRequest()
                     .body(Map.of(
                             "message",
-                            "User already exists"
-                    ));
+                            "User already exists"));
         }
 
         User user = User.builder()
@@ -50,15 +48,13 @@ public class AuthController {
                         "message",
                         "User registered successfully",
                         "userId",
-                        user.getId()
-                ));
+                        user.getId()));
     }
 
     @PostMapping("/login")
     public ResponseEntity<?> login(
             @RequestBody LoginRequest request,
-            HttpServletRequest httpRequest
-    ) {
+            HttpServletRequest httpRequest) {
 
         User user = userRepository
                 .findByUsername(request.getUsername())
@@ -67,44 +63,35 @@ public class AuthController {
         if (user == null ||
                 !passwordEncoder.matches(
                         request.getPassword(),
-                        user.getPassword()
-                )) {
+                        user.getPassword())) {
 
             return ResponseEntity.status(401)
                     .body(Map.of(
                             "message",
-                            "Invalid credentials"
-                    ));
+                            "Invalid credentials"));
         }
 
-        HttpSession session =
-                httpRequest.getSession(true);
+        HttpSession session = httpRequest.getSession(true);
 
         session.setAttribute(
                 "userId",
-                user.getId()
-        );
+                user.getId());
 
         session.setAttribute(
                 "username",
-                user.getUsername()
-        );
+                user.getUsername());
 
         return ResponseEntity.ok(
                 Map.of(
                         "message",
-                        "Login successful"
-                )
-        );
+                        "Login successful"));
     }
 
     @PostMapping("/logout")
     public ResponseEntity<?> logout(
-            HttpServletRequest request
-    ) {
+            HttpServletRequest request) {
 
-        HttpSession session =
-                request.getSession(false);
+        HttpSession session = request.getSession(false);
 
         if (session != null) {
             session.invalidate();
@@ -113,8 +100,6 @@ public class AuthController {
         return ResponseEntity.ok(
                 Map.of(
                         "message",
-                        "Logout successful"
-                )
-        );
+                        "Logout successful"));
     }
 }

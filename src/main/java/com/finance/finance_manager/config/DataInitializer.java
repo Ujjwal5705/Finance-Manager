@@ -28,8 +28,7 @@ public class DataInitializer {
 
     private void createDefault(
             String name,
-            TransactionType type
-    ) {
+            TransactionType type) {
 
         boolean exists = categoryRepository.findAll()
                 .stream()

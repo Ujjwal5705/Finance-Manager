@@ -1,13 +1,12 @@
 package com.finance.finance_manager.controller;
 
 import com.finance.finance_manager.dto.TransactionRequest;
-// import com.finance.finance_manager.dto.UpdateTransactionRequest;
 import com.finance.finance_manager.entity.Category;
 import com.finance.finance_manager.entity.Transaction;
 import com.finance.finance_manager.entity.User;
 import com.finance.finance_manager.repository.CategoryRepository;
 import com.finance.finance_manager.repository.TransactionRepository;
-import com.finance.finance_manager.config.SessionUtil; // 1. Import helper
+import com.finance.finance_manager.config.SessionUtil;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -24,132 +23,128 @@ import java.util.HashMap;
 @RequiredArgsConstructor
 public class TransactionController {
 
-        private final TransactionRepository transactionRepository;
-        private final CategoryRepository categoryRepository;
-        private final SessionUtil sessionUtil; // 2. Inject SessionUtil
+    private final TransactionRepository transactionRepository;
+    private final CategoryRepository categoryRepository;
+    private final SessionUtil sessionUtil;
 
-        @PostMapping
-        public ResponseEntity<?> createTransaction(
-                        @Valid @RequestBody TransactionRequest request,
-                        HttpSession session) {
-                // 3. Use SessionUtil for authentication
-                User user = sessionUtil.getLoggedInUser(session);
+    @PostMapping
+    public ResponseEntity<?> createTransaction(
+            @Valid @RequestBody TransactionRequest request,
+            HttpSession session) {
 
-                Category category = categoryRepository.findByNameAndUser(request.getCategory(), user)
-                                .orElse(categoryRepository.findByUserOrIsCustomFalse(user).stream()
-                                                .filter(c -> c.getName().equalsIgnoreCase(request.getCategory()))
-                                                .findFirst()
-                                                .orElseThrow());
+        User user = sessionUtil.getLoggedInUser(session);
 
-                Transaction transaction = Transaction.builder()
-                                .amount(request.getAmount())
-                                .date(request.getDate())
-                                .description(request.getDescription())
-                                .category(category)
-                                .user(user)
-                                .build();
+        Category category = categoryRepository.findByNameAndUser(request.getCategory(), user)
+                .orElse(categoryRepository.findByUserOrIsCustomFalse(user).stream()
+                        .filter(c -> c.getName().equalsIgnoreCase(request.getCategory()))
+                        .findFirst()
+                        .orElseThrow());
 
-                transactionRepository.save(transaction);
+        Transaction transaction = Transaction.builder()
+                .amount(request.getAmount())
+                .date(request.getDate())
+                .description(request.getDescription())
+                .category(category)
+                .user(user)
+                .build();
 
-                return ResponseEntity.status(201).body(Map.of(
-                                "id", transaction.getId(),
-                                "amount", transaction.getAmount().setScale(2),
-                                "date", transaction.getDate(),
-                                "category", category.getName(),
-                                "description", transaction.getDescription(),
-                                "type", category.getType()));
+        transactionRepository.save(transaction);
+
+        return ResponseEntity.status(201).body(Map.of(
+                "id", transaction.getId(),
+                "amount", transaction.getAmount().setScale(2),
+                "date", transaction.getDate(),
+                "category", category.getName(),
+                "description", transaction.getDescription(),
+                "type", category.getType()));
+    }
+
+    @GetMapping
+    public ResponseEntity<?> getTransactions(
+            @RequestParam(required = false) LocalDate startDate,
+            @RequestParam(required = false) LocalDate endDate,
+            @RequestParam(required = false) String category,
+            HttpSession session) {
+        User user = sessionUtil.getLoggedInUser(session);
+
+        List<Transaction> transactions = (startDate != null && endDate != null)
+                ? transactionRepository.findByUserAndDateBetweenOrderByDateDesc(user, startDate,
+                        endDate)
+                : transactionRepository.findByUserOrderByDateDesc(user);
+
+        if (category != null) {
+            transactions = transactions.stream()
+                    .filter(t -> t.getCategory()
+                            .getName()
+                            .equalsIgnoreCase(category))
+                    .toList();
         }
 
-        @GetMapping
-        public ResponseEntity<?> getTransactions(
-                        @RequestParam(required = false) LocalDate startDate,
-                        @RequestParam(required = false) LocalDate endDate,
-                        @RequestParam(required = false) String category,
-                        HttpSession session) {
-                User user = sessionUtil.getLoggedInUser(session);
+        List<Map<String, Object>> response = transactions.stream().map(t -> {
+            Map<String, Object> map = new HashMap<>();
+            map.put("id", t.getId());
+            map.put("amount", t.getAmount());
+            map.put("date", t.getDate());
+            map.put("category", t.getCategory().getName());
+            map.put("description", t.getDescription() == null ? "" : t.getDescription());
+            map.put("type", t.getCategory().getType());
+            return map;
+        }).toList();
 
-                List<Transaction> transactions = (startDate != null && endDate != null)
-                                ? transactionRepository.findByUserAndDateBetweenOrderByDateDesc(user, startDate,
-                                                endDate)
-                                : transactionRepository.findByUserOrderByDateDesc(user);
+        return ResponseEntity.ok(Map.of("transactions", response));
+    }
 
-                // 2. Added filtering logic
-                if (category != null) {
-                        transactions = transactions.stream()
-                                        .filter(t -> t.getCategory()
-                                                        .getName()
-                                                        .equalsIgnoreCase(category))
-                                        .toList();
-                }
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateTransaction(
+            @PathVariable Long id,
+            @RequestBody Map<String, Object> request,
+            HttpSession session) {
 
-                List<Map<String, Object>> response = transactions.stream().map(t -> {
-                        Map<String, Object> map = new HashMap<>();
-                        map.put("id", t.getId());
-                        map.put("amount", t.getAmount());
-                        map.put("date", t.getDate());
-                        map.put("category", t.getCategory().getName());
-                        map.put("description", t.getDescription() == null ? "" : t.getDescription());
-                        map.put("type", t.getCategory().getType());
-                        return map;
-                }).toList();
+        User user = sessionUtil.getLoggedInUser(session);
 
-                return ResponseEntity.ok(Map.of("transactions", response));
+        Transaction transaction = transactionRepository.findById(id)
+                .orElseThrow();
+
+        if (!transaction.getUser().getId().equals(user.getId())) {
+
+            return ResponseEntity.status(403)
+                    .body(Map.of("message", "Forbidden"));
         }
 
-        @PutMapping("/{id}")
-        public ResponseEntity<?> updateTransaction(
-                        @PathVariable Long id,
-                        @RequestBody Map<String, Object> request,
-                        HttpSession session) {
+        if (request.containsKey("amount")) {
 
-                User user = sessionUtil.getLoggedInUser(session);
-
-                Transaction transaction = transactionRepository.findById(id)
-                                .orElseThrow();
-
-                if (!transaction.getUser().getId().equals(user.getId())) {
-
-                        return ResponseEntity.status(403)
-                                        .body(Map.of("message", "Forbidden"));
-                }
-
-                if (request.containsKey("amount")) {
-
-                        transaction.setAmount(
-                                        new java.math.BigDecimal(
-                                                        request.get("amount").toString()));
-                }
-
-                if (request.containsKey("description")) {
-
-                        transaction.setDescription(
-                                        request.get("description").toString());
-                }
-
-                // IMPORTANT:
-                // DO NOT TOUCH DATE FIELD
-
-                transactionRepository.save(transaction);
-
-                return ResponseEntity.ok(Map.of(
-                                "id", transaction.getId(),
-                                "amount", transaction.getAmount().setScale(2),
-                                "date", transaction.getDate(),
-                                "category", transaction.getCategory().getName(),
-                                "description", transaction.getDescription(),
-                                "type", transaction.getCategory().getType()));
+            transaction.setAmount(
+                    new java.math.BigDecimal(
+                            request.get("amount").toString()));
         }
 
-        @DeleteMapping("/{id}")
-        public ResponseEntity<?> deleteTransaction(@PathVariable Long id, HttpSession session) {
-                User user = sessionUtil.getLoggedInUser(session);
+        if (request.containsKey("description")) {
 
-                Transaction transaction = transactionRepository.findById(id).orElseThrow();
-                if (!transaction.getUser().getId().equals(user.getId())) {
-                        return ResponseEntity.status(403).body(Map.of("message", "Forbidden"));
-                }
-
-                transactionRepository.delete(transaction);
-                return ResponseEntity.ok(Map.of("message", "Transaction deleted successfully"));
+            transaction.setDescription(
+                    request.get("description").toString());
         }
+
+        transactionRepository.save(transaction);
+
+        return ResponseEntity.ok(Map.of(
+                "id", transaction.getId(),
+                "amount", transaction.getAmount().setScale(2),
+                "date", transaction.getDate(),
+                "category", transaction.getCategory().getName(),
+                "description", transaction.getDescription(),
+                "type", transaction.getCategory().getType()));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteTransaction(@PathVariable Long id, HttpSession session) {
+        User user = sessionUtil.getLoggedInUser(session);
+
+        Transaction transaction = transactionRepository.findById(id).orElseThrow();
+        if (!transaction.getUser().getId().equals(user.getId())) {
+            return ResponseEntity.status(403).body(Map.of("message", "Forbidden"));
+        }
+
+        transactionRepository.delete(transaction);
+        return ResponseEntity.ok(Map.of("message", "Transaction deleted successfully"));
+    }
 }

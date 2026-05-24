@@ -6,7 +6,7 @@ import com.finance.finance_manager.entity.Category;
 import com.finance.finance_manager.entity.User;
 import com.finance.finance_manager.repository.CategoryRepository;
 import com.finance.finance_manager.repository.TransactionRepository;
-import com.finance.finance_manager.config.SessionUtil; // Import the helper
+import com.finance.finance_manager.config.SessionUtil;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -23,11 +23,10 @@ public class CategoryController {
 
     private final CategoryRepository categoryRepository;
     private final TransactionRepository transactionRepository;
-    private final SessionUtil sessionUtil; // 1. Inject SessionUtil
+    private final SessionUtil sessionUtil;
 
     @GetMapping
     public ResponseEntity<?> getCategories(HttpSession session) {
-        // 2. Simplified user lookup
         User user = sessionUtil.getLoggedInUser(session);
 
         List<Category> categories = categoryRepository.findByUserOrIsCustomFalse(user);
@@ -38,8 +37,7 @@ public class CategoryController {
     @PostMapping
     public ResponseEntity<?> createCategory(
             @Valid @RequestBody CategoryRequest request,
-            HttpSession session
-    ) {
+            HttpSession session) {
         User user = sessionUtil.getLoggedInUser(session);
 
         if (categoryRepository.existsByNameAndUser(request.getName(), user)) {
@@ -62,30 +60,26 @@ public class CategoryController {
     @DeleteMapping("/{name}")
     public ResponseEntity<?> deleteCategory(
             @PathVariable String name,
-            HttpSession session
-    ) {
+            HttpSession session) {
         User user = sessionUtil.getLoggedInUser(session);
 
         Category category = categoryRepository
                 .findByNameAndUser(name, user)
                 .orElseThrow();
-        
-        // 1. Fetch transactions to check if category is in use
+
         List<Transaction> transactions = transactionRepository.findAll()
                 .stream()
                 .filter(t -> t.getCategory().getId().equals(category.getId()))
                 .toList();
 
-        // 2. Return 400 if transactions exist
         if (!transactions.isEmpty()) {
             return ResponseEntity.badRequest()
                     .body(Map.of("message", "Category is in use"));
         }
-        
+
         categoryRepository.delete(category);
 
         return ResponseEntity.ok(
-                Map.of("message", "Category deleted successfully")
-        );
+                Map.of("message", "Category deleted successfully"));
     }
 }

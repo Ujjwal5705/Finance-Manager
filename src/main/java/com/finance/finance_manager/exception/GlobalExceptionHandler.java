@@ -25,14 +25,12 @@ public class GlobalExceptionHandler {
                 .body(Map.of("message", "Validation failed"));
     }
 
-    // 2. ADDED: Handler for bad JSON/Enum deserialization
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<?> handleBadJson(HttpMessageNotReadableException ex) {
         return ResponseEntity.badRequest()
                 .body(Map.of("message", "Invalid request body"));
     }
-    
-    // ADDED: Handler to return 401 for Unauthorized RuntimeExceptions
+
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<?> handleUnauthorized(RuntimeException ex) {
         if ("Unauthorized".equals(ex.getMessage())) {

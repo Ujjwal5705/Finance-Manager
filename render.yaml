@@ -2,8 +2,3 @@ services:
   - type: web
     name: finance-manager
     env: docker
-    plan: free
-    autoDeploy: true
-    dockerfilePath: Dockerfile
-    dockerContext: .
-    healthCheckPath: /health # A basic path to verify the app is up

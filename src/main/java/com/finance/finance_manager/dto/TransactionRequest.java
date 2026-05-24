@@ -1,5 +1,6 @@
 package com.finance.finance_manager.dto;
 
+import jakarta.validation.constraints.PastOrPresent;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.Data;
@@ -15,6 +16,7 @@ public class TransactionRequest {
     private BigDecimal amount;
 
     @NotNull
+    @PastOrPresent
     private LocalDate date;
 
     @NotNull

@@ -1,16 +1,18 @@
 package com.finance.finance_manager.controller;
 
+import com.finance.finance_manager.entity.Transaction;
 import com.finance.finance_manager.dto.CategoryRequest;
 import com.finance.finance_manager.entity.Category;
 import com.finance.finance_manager.entity.User;
 import com.finance.finance_manager.repository.CategoryRepository;
-import com.finance.finance_manager.repository.UserRepository;
+import com.finance.finance_manager.repository.TransactionRepository;
+import com.finance.finance_manager.config.SessionUtil; // Import the helper
+import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.validation.Valid;
-import java.security.Principal;
 import java.util.List;
 import java.util.Map;
 
@@ -20,16 +22,15 @@ import java.util.Map;
 public class CategoryController {
 
     private final CategoryRepository categoryRepository;
-    private final UserRepository userRepository;
+    private final TransactionRepository transactionRepository;
+    private final SessionUtil sessionUtil; // 1. Inject SessionUtil
 
     @GetMapping
-    public ResponseEntity<?> getCategories(Principal principal) {
+    public ResponseEntity<?> getCategories(HttpSession session) {
+        // 2. Simplified user lookup
+        User user = sessionUtil.getLoggedInUser(session);
 
-        User user = userRepository.findByUsername(principal.getName())
-                .orElseThrow();
-
-        List<Category> categories =
-                categoryRepository.findByUserOrIsCustomFalse(user);
+        List<Category> categories = categoryRepository.findByUserOrIsCustomFalse(user);
 
         return ResponseEntity.ok(Map.of("categories", categories));
     }
@@ -37,11 +38,9 @@ public class CategoryController {
     @PostMapping
     public ResponseEntity<?> createCategory(
             @Valid @RequestBody CategoryRequest request,
-            Principal principal
+            HttpSession session
     ) {
-
-        User user = userRepository.findByUsername(principal.getName())
-                .orElseThrow();
+        User user = sessionUtil.getLoggedInUser(session);
 
         if (categoryRepository.existsByNameAndUser(request.getName(), user)) {
             return ResponseEntity.status(409)
@@ -63,16 +62,26 @@ public class CategoryController {
     @DeleteMapping("/{name}")
     public ResponseEntity<?> deleteCategory(
             @PathVariable String name,
-            Principal principal
+            HttpSession session
     ) {
-
-        User user = userRepository.findByUsername(principal.getName())
-                .orElseThrow();
+        User user = sessionUtil.getLoggedInUser(session);
 
         Category category = categoryRepository
                 .findByNameAndUser(name, user)
                 .orElseThrow();
+        
+        // 1. Fetch transactions to check if category is in use
+        List<Transaction> transactions = transactionRepository.findAll()
+                .stream()
+                .filter(t -> t.getCategory().getId().equals(category.getId()))
+                .toList();
 
+        // 2. Return 400 if transactions exist
+        if (!transactions.isEmpty()) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("message", "Category is in use"));
+        }
+        
         categoryRepository.delete(category);
 
         return ResponseEntity.ok(

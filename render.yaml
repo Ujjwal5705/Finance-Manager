@@ -6,4 +6,4 @@ services:
     autoDeploy: true
     dockerfilePath: Dockerfile
     dockerContext: .
-    healthCheckPath: /api/transactions # A basic path to verify the app is up
+    healthCheckPath: /health # A basic path to verify the app is up

@@ -65,3 +65,4 @@ The application follows the professional MVC + Service + Repository pattern:
 - entity/: Database models.
 - repository/: Data access layer.
 - exception/: Global error handling.
+
